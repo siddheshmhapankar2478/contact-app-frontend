@@ -1,58 +1,46 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
+import { makeApiCall } from "../utils/api";
 
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
-  withCredentials: true,
-});
-
-const useFetchData = (url, options = {}) => {
+const useFetchData = (options = {}) => {
   const {
     method = "GET",
     body = null,
     headers = {},
-    makeApiCall = true,
+    dataType = "JSON",
+    makeApiCall: shouldCallApi = true,
+    url,
   } = options;
 
   const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(shouldCallApi);
   const [error, setError] = useState(null);
 
-  const fetchData = async (updatedBody = {}) => {
-    if (!url) {
-      setIsLoading(false);
-      return;
-    }
-
+  const fetchData = async (payload = {}) => {
     setIsLoading(true);
     setError(null);
+    setData(null);
 
-    const updatedBodyData = { ...body, ...updatedBody };
+    const mergedPayload = { ...body, ...payload };
 
-    try {
-      const config = {
-        method,
-        url,
-        headers: {
-          "Content-Type": "application/json",
-          ...headers,
-        },
-        ...(method !== "GET" && { data: updatedBodyData }),
-      };
+    const response = await makeApiCall(
+      method,
+      url,
+      mergedPayload,
+      headers,
+      dataType
+    );
 
-      const response = await api(config);
-      setData(response.data);
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setError(err);
-      setData(null);
-    } finally {
-      setIsLoading(false);
+    if (response?.error) {
+      setError(response.error);
     }
+
+    setData(response);
+    setIsLoading(false);
+    return response;
   };
 
   useEffect(() => {
-    if (makeApiCall) fetchData();
+    if (shouldCallApi) fetchData();
   }, []);
 
   return [data, isLoading, error, fetchData];
