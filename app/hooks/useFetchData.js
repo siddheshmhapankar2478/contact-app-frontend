@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { makeApiCall } from "../utils/api";
+import { useSnackbar } from "../context/Snackbar";
 
 const useFetchData = (options = {}) => {
   const {
@@ -15,35 +16,52 @@ const useFetchData = (options = {}) => {
   const [isLoading, setIsLoading] = useState(shouldCallApi);
   const [error, setError] = useState(null);
 
+  const { showSnackbar } = useSnackbar();
+
   const fetchData = async (payload = {}) => {
-    setIsLoading(true);
-    setError(null);
-    setData(null);
+    let response = null;
 
-    const mergedPayload = { ...body, ...payload };
+    try {
+      setIsLoading(true);
+      setError(null);
+      setData(null);
 
-    const response = await makeApiCall(
-      method,
-      url,
-      mergedPayload,
-      headers,
-      dataType
-    );
+      const mergedPayload = { ...body, ...payload };
 
-    if (response?.error) {
-      setError(response.error);
+      response = await makeApiCall(
+        method,
+        url,
+        mergedPayload,
+        headers,
+        dataType
+      );
+
+      if (response.data) {
+        const { message } = response.data;
+
+        setData(response.data);
+        if (message)
+          showSnackbar({
+            message: message,
+            type: "success",
+          });
+      } else throw new Error(response.error);
+    } catch (err) {
+      console.error(err);
+      showSnackbar({
+        message: err.message,
+        type: "error",
+      });
+    } finally {
+      return response;
     }
-
-    setData(response);
-    setIsLoading(false);
-    return response;
   };
 
   useEffect(() => {
     if (shouldCallApi) fetchData();
   }, []);
 
-  return [data, isLoading, error, fetchData];
+  return { data, isLoading, setIsLoading, error, fetchData };
 };
 
 export default useFetchData;
