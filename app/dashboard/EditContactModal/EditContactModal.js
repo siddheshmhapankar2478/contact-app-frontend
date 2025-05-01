@@ -45,8 +45,6 @@ const EditContactModal = (props) => {
       }
     });
 
-    console.log({ newErrors });
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };

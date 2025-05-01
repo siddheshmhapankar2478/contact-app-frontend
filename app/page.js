@@ -138,7 +138,6 @@ const Register = () => {
               </div>
             ))}
 
-          {console.log({ loginLoading, registerLoading })}
           <button
             type="submit"
             className={`w-full py-2 rounded-lg font-semibold flex justify-center items-center transition duration-200 ${
