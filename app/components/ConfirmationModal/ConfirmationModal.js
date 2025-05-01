@@ -53,7 +53,7 @@ const ConfirmationModal = ({
           variant="contained"
           color="error"
           disabled={loading}
-          startIcon={
+          endIcon={
             loading ? <CircularProgress size={16} color="inherit" /> : null
           }
         >

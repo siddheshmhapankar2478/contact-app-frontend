@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { Button, Stack } from "@mui/material";
+import React, { useState } from "react";
+import { Button, CircularProgress, Stack } from "@mui/material";
 import CustomModal from "@/app/components/CustomModal/CustomModal";
 import CommonTextField from "@/app/components/CommonTextField/CommonTextField";
+import useFetchData from "@/app/hooks/useFetchData";
 
 const defaultData = {
   name: "",
@@ -11,50 +12,72 @@ const defaultData = {
 };
 
 const EditContactModal = (props) => {
-  const { onClose, contactData } = props;
+  const { onClose, contactData, fetchData } = props;
 
   const [formData, setFormData] = useState(contactData || defaultData);
   const [errors, setErrors] = useState({});
+  const {
+    isLoading,
+    setIsLoading,
+    fetchData: handleCreate,
+  } = useFetchData({
+    url: contactData
+      ? `/api/contact/update/${contactData._id}`
+      : `/api/contact/update`,
+    makeApiCall: false,
+    method: "POST",
+  });
 
-  const handleChange = (updatedField) => {
+  const handleChange = (updatedField) =>
     setFormData((prev) => ({ ...prev, ...updatedField }));
-    // Clear the error for the updated field
-    const key = Object.keys(updatedField)[0];
-    if (errors[key]) {
-      setErrors((prev) => ({ ...prev, [key]: "" }));
-    }
-  };
 
   const validateBody = () => {
     const newErrors = {};
-    Object.entries(formData).forEach(([key, value]) => {
-      if (!value || value.trim() === "") {
-        newErrors[key] = "This field is required";
+    const requiredFields = ["name", "email", "phone", "type"];
+    requiredFields.forEach((field) => {
+      const value = formData[field];
+      if (value === "string") {
+        if (value.trim() === "") {
+          newErrors[field] = "This field is required";
+        }
+      } else if (!value) {
+        newErrors[field] = "This field is required";
       }
     });
+
+    console.log({ newErrors });
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const onSave = () => {
-    console.log("Valid data to be sent:", formData);
-    // API call or other logic here
-  };
-
-  const handleSave = () => {
+  const handleSave = async () => {
     if (validateBody()) {
-      onSave();
-      onClose();
+      try {
+        const response = await handleCreate(formData);
+        if (response.data) {
+          setIsLoading(false);
+          onClose();
+          await fetchData();
+        }
+      } catch (err) {
+        console.error(err);
+        setIsLoading(false);
+      }
     }
   };
 
   return (
     <CustomModal
       onClose={onClose}
-      title="Edit Contact"
+      title={contactData ? "Edit Contact" : "Add Contact"}
       footer={
-        <Button onClick={handleSave} variant="contained">
+        <Button
+          onClick={handleSave}
+          disabled={isLoading}
+          variant="contained"
+          endIcon={isLoading ? <CircularProgress size={16} /> : null}
+        >
           Save
         </Button>
       }
