@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getCookie } from "./utilityFunction";
 
 export const makeApiCall = async (
   method,
@@ -7,9 +8,19 @@ export const makeApiCall = async (
   headers = {},
   dataType = "JSON"
 ) => {
+  const sessionData = getCookie("session_data");
+  const { user_id, token } = sessionData;
+
+  if (path.includes("[user_id]") && user_id) {
+    path = path.replace("[user_id]", user_id);
+  }
+
   const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL + path;
 
-  const apiHeaders = { ...headers };
+  const apiHeaders = {
+    ...headers,
+    ...(token ? { "session-token": token } : {}),
+  };
   let payload = data;
 
   if (dataType === "JSON" && data) {

@@ -53,6 +53,8 @@ const useFetchData = (options = {}) => {
         type: "error",
       });
     } finally {
+      if (makeApiCall) setIsLoading(false);
+
       return response;
     }
   };
