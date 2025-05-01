@@ -16,3 +16,17 @@ export const getCookie = (key) => {
       ?.split("=")[1] || null
   );
 };
+
+
+export const deleteAllCookies = () => {
+  document.cookie.split(";").forEach((cookie) => {
+    const key = cookie.split("=")[0].trim();
+    document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+  });
+};
+
+export const logout = () => {
+  deleteAllCookies();
+  window.location.href = "/";
+};
+

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getCookie } from "./utilityFunction";
+import { getCookie, logout } from "./utilityFunction";
 
 export const makeApiCall = async (
   method,
@@ -9,7 +9,7 @@ export const makeApiCall = async (
   dataType = "JSON"
 ) => {
   const sessionData = getCookie("session_data");
-  const { user_id, token } = sessionData;
+  const { user_id, token } = sessionData || {};
 
   if (path.includes("[user_id]") && user_id) {
     path = path.replace("[user_id]", user_id);

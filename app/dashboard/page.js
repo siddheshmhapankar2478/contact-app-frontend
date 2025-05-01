@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { CircularProgress } from "@mui/material";
 
 import useFetchData from "../hooks/useFetchData";
-import { CircularProgress } from "@mui/material";
+import { logout } from "../utils/utilityFunction";
 import EditContactModal from "./EditContactModal/EditContactModal";
 import ConfirmationModal from "../components/ConfirmationModal/ConfirmationModal";
 
@@ -13,16 +14,13 @@ const Dashboard = () => {
     isLoading: pageLoader,
     data: contactData,
     fetchData,
-  } = useFetchData({
-    url: "/api/contact/list",
-  });
+  } = useFetchData({ url: "/api/contact/list" });
+
   const { fetchData: handleDelete } = useFetchData({
     url: `/api/contact/${showModal?.id}`,
     makeApiCall: false,
     method: "DELETE",
   });
-
-  const contacts = contactData?.results || [];
 
   const deleteContact = async () => {
     try {
@@ -36,12 +34,23 @@ const Dashboard = () => {
     }
   };
 
+  const contacts = contactData?.results || [];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-purple-100 p-6">
       <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-8">
-        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
-          Contact Dashboard
-        </h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-800">
+            Contact Dashboard
+          </h1>
+          <button
+            onClick={logout}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm"
+          >
+            Logout
+          </button>
+        </div>
+
         {showModal ? (
           showModal?.type === "delete" ? (
             <ConfirmationModal
@@ -59,7 +68,7 @@ const Dashboard = () => {
             />
           )
         ) : null}
-        {/* Add Contact Button */}
+
         <div className="flex justify-end mb-4">
           <button
             className={`bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 cursor-pointer ${
@@ -71,6 +80,7 @@ const Dashboard = () => {
             + Add Contact
           </button>
         </div>
+
         {pageLoader ? (
           <div className="text-center">
             <CircularProgress />
